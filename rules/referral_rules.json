@@ -1,0 +1,31 @@
+{
+  "needs_review": {
+    "rules": [
+      { "name": "patient_name_present", "condition": "patient_name != null" },
+      { "name": "insurance_present", "condition": "insurance != null" },
+      { "name": "contact_number_present", "condition": "contact_number != null" }
+    ],
+    "success_state": "ready_for_assignment",
+    "failure_state": "missing_information"
+  },
+  "missing_information": {
+    "rules": [
+      { "name": "patient_name_present", "condition": "patient_name != null" },
+      { "name": "insurance_present", "condition": "insurance != null" },
+      { "name": "contact_number_present", "condition": "contact_number != null" }
+    ],
+    "success_state": "needs_review",
+    "failure_state": "missing_information"
+  },
+  "extracting_information": {
+    "rules": [
+      {
+        "name": "reject_aetna",
+        "condition": "insurance != 'Aetna'"
+      }
+    ],
+    "success_state": "needs_review",
+    "failure_state": "rejected"
+  }
+}
+
