@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> referral_received
+    referral_received --> completed
+    referral_received --> needs_review
+    referral_received --> incomplete
+    referral_received --> rejected
+
+    style referral_received fill:#e6ffed,stroke:#28a745,stroke-width:1.5px
+    style completed fill:#e6ffed,stroke:#28a745,stroke-width:2px

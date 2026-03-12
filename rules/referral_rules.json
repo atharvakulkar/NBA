@@ -1,31 +1,29 @@
 {
+  "referral_received": {
+    "rules": [
+      { "name": "all_fields_complete", "condition": "patient_name != null and insurance != null and contact_number != null" },
+      { "name": "insurance_not_aetna", "condition": "insurance != 'Aetna'" }
+    ],
+    "success_state": "completed",
+    "failure_state": "rejected"
+  },
   "needs_review": {
     "rules": [
       { "name": "patient_name_present", "condition": "patient_name != null" },
       { "name": "insurance_present", "condition": "insurance != null" },
       { "name": "contact_number_present", "condition": "contact_number != null" }
     ],
-    "success_state": "ready_for_assignment",
-    "failure_state": "missing_information"
+    "success_state": "completed",
+    "failure_state": "incomplete"
   },
-  "missing_information": {
+  "incomplete": {
     "rules": [
       { "name": "patient_name_present", "condition": "patient_name != null" },
       { "name": "insurance_present", "condition": "insurance != null" },
       { "name": "contact_number_present", "condition": "contact_number != null" }
     ],
     "success_state": "needs_review",
-    "failure_state": "missing_information"
-  },
-  "extracting_information": {
-    "rules": [
-      {
-        "name": "reject_aetna",
-        "condition": "insurance != 'Aetna'"
-      }
-    ],
-    "success_state": "needs_review",
-    "failure_state": "rejected"
+    "failure_state": "incomplete"
   }
 }
 

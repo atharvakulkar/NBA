@@ -46,7 +46,7 @@ def create_app(
 
     repo = repository or ReferralRepository(
         _store={
-            # Patient 123: All details complete → completed (all green).
+            # Patient 123: All details complete → completed.
             "123": ReferralRecord(
                 referral_id="123",
                 state="completed",
@@ -56,7 +56,7 @@ def create_app(
                     "contact_number": "555-0201",
                 },
             ),
-            # Patient 456: Missing insurance & contact → stuck in missing_information.
+            # Patient 456: Needs review.
             "456": ReferralRecord(
                 referral_id="456",
                 state="needs_review",
@@ -66,10 +66,10 @@ def create_app(
                     "contact_number": None,
                 },
             ),
-            # Patient 789: Aetna payer → rejected after extracting_information.
+            # Patient 789: Rejected.
             "789": ReferralRecord(
                 referral_id="789",
-                state="extracting_information",
+                state="rejected",
                 attributes={
                     "patient_name": "Linda Chen",
                     "insurance": "Aetna",
@@ -86,12 +86,22 @@ def create_app(
                     "contact_number": "555-0403",
                 },
             ),
-            # Patient 202: Just received via fax, minimal info.
+            # Patient 202: Just received, minimal info.
             "202": ReferralRecord(
                 referral_id="202",
-                state="fax_received",
+                state="referral_received",
                 attributes={
                     "patient_name": "Susan Martinez",
+                },
+            ),
+            # Patient 303: Incomplete.
+            "303": ReferralRecord(
+                referral_id="303",
+                state="incomplete",
+                attributes={
+                    "patient_name": "John Doe",
+                    "insurance": None,
+                    "contact_number": None,
                 },
             ),
         }

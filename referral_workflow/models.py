@@ -7,13 +7,10 @@ from pydantic import BaseModel, Field
 
 
 ReferralState = Literal[
-    "fax_received",
-    "extracting_information",
-    "needs_review",
-    "missing_information",
-    "ready_for_assignment",
-    "assigned_to_care_team",
+    "referral_received",
     "completed",
+    "needs_review",
+    "incomplete",
     "rejected",
 ]
 
@@ -69,7 +66,7 @@ class ReferralRecord:
     """
 
     referral_id: str
-    state: ReferralState = "fax_received"
+    state: ReferralState = "referral_received"
     attributes: Dict[str, Any] = field(default_factory=dict)
     custom_mermaid_diagram: Optional[str] = None
 

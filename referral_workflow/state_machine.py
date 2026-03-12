@@ -35,34 +35,21 @@ class ReferralStateMachine:
         self.state: ReferralState = self.record.state
 
         states: Sequence[ReferralState] = [
-            "fax_received",
-            "extracting_information",
-            "needs_review",
-            "missing_information",
-            "ready_for_assignment",
-            "assigned_to_care_team",
+            "referral_received",
             "completed",
+            "needs_review",
+            "incomplete",
             "rejected",
         ]
 
         transitions = [
-            # Core linear flow.
-            {"trigger": "start_extraction", "source": "fax_received", "dest": "extracting_information"},
-            {"trigger": "submit_for_review", "source": "extracting_information", "dest": "needs_review"},
-            # Router-controlled outcomes (auto-routed).
-            {"trigger": "route_to_missing_information", "source": "needs_review", "dest": "missing_information"},
-            {"trigger": "route_to_ready_for_assignment", "source": "needs_review", "dest": "ready_for_assignment"},
-            # Missing info remediation.
-            {"trigger": "mark_info_received", "source": "missing_information", "dest": "needs_review"},
-            # Assignment + completion.
-            {"trigger": "assign_to_care_team", "source": "ready_for_assignment", "dest": "assigned_to_care_team"},
-            {"trigger": "complete", "source": "assigned_to_care_team", "dest": "completed"},
-            # Reject paths.
-            {
-                "trigger": "reject",
-                "source": ["extracting_information", "needs_review", "missing_information", "ready_for_assignment"],
-                "dest": "rejected",
-            },
+            # From referral_received, route to one of four states.
+            {"trigger": "route_to_completed", "source": "referral_received", "dest": "completed"},
+            {"trigger": "route_to_needs_review", "source": "referral_received", "dest": "needs_review"},
+            {"trigger": "route_to_incomplete", "source": "referral_received", "dest": "incomplete"},
+            {"trigger": "route_to_rejected", "source": "referral_received", "dest": "rejected"},
+            # From needs_review and incomplete, can go back to referral_received.
+            {"trigger": "return_to_referral_received", "source": ["needs_review", "incomplete"], "dest": "referral_received"},
         ]
 
         self._machine = Machine(
@@ -96,10 +83,12 @@ class ReferralStateMachine:
     def _auto_advance(self, next_state: ReferralState) -> None:
         # Map destination to trigger names for router-controlled branch points.
         mapping: Dict[tuple[ReferralState, ReferralState], str] = {
-            ("extracting_information", "needs_review"): "submit_for_review",
-            ("extracting_information", "rejected"): "reject",
-            ("needs_review", "missing_information"): "route_to_missing_information",
-            ("needs_review", "ready_for_assignment"): "route_to_ready_for_assignment",
+            ("referral_received", "completed"): "route_to_completed",
+            ("referral_received", "needs_review"): "route_to_needs_review",
+            ("referral_received", "incomplete"): "route_to_incomplete",
+            ("referral_received", "rejected"): "route_to_rejected",
+            ("needs_review", "referral_received"): "return_to_referral_received",
+            ("incomplete", "referral_received"): "return_to_referral_received",
         }
         trigger = mapping.get((self.record.state, next_state))
         if trigger and hasattr(self, trigger):
@@ -125,23 +114,19 @@ class ReferralStateMachine:
         """
 
         action_to_trigger = {
-            # Linear flow actions (optional).
-            "start_extraction": "start_extraction",
-            "submit_for_review": "submit_for_review",
-            # Missing-info actions: we treat these as "info received" signals.
-            "request_patient_name": "mark_info_received",
-            "request_insurance": "mark_info_received",
-            "request_contact_number": "mark_info_received",
-            "request_missing_information": "mark_info_received",
-            # Demo prototype: "provide_*" actions behave like info received.
-            "provide_patient_name": "mark_info_received",
-            "provide_insurance": "mark_info_received",
-            "provide_contact_number": "mark_info_received",
-            # Assignment/completion.
-            "assign_to_care_team": "assign_to_care_team",
-            "complete": "complete",
-            # Reject.
-            "reject": "reject",
+            # Routing actions from referral_received.
+            "route_to_completed": "route_to_completed",
+            "route_to_needs_review": "route_to_needs_review",
+            "route_to_incomplete": "route_to_incomplete",
+            "route_to_rejected": "route_to_rejected",
+            # Return to referral_received from needs_review or incomplete.
+            "return_to_referral_received": "return_to_referral_received",
+            # Alternative action names for convenience.
+            "complete": "route_to_completed",
+            "mark_for_review": "route_to_needs_review",
+            "mark_incomplete": "route_to_incomplete",
+            "reject": "route_to_rejected",
+            "return_to_received": "return_to_referral_received",
         }
 
         trigger = action_to_trigger.get(action)

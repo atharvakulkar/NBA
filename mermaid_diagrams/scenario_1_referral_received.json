@@ -1,0 +1,3 @@
+{
+  "diagram": "stateDiagram-v2\n    [*] --> referral_received\n    referral_received --> completed\n    referral_received --> needs_review\n    referral_received --> incomplete\n    referral_received --> rejected\n    needs_review --> referral_received\n    incomplete --> referral_received\n\n    style referral_received fill:#fffbdd,stroke:#b58900,stroke-width:2px"
+}
